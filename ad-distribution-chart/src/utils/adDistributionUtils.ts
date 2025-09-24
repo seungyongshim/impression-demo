@@ -1,13 +1,13 @@
 import { TimeSlot } from '../types/AdDistribution';
 
 /**
- * 10일을 10분 단위로 나누어 타임슬롯을 생성합니다.
+ * 1일을 10분 단위로 나누어 타임슬롯을 생성합니다.
  */
 export function createTimeSlots(startDate: Date, totalImpressions: number): TimeSlot[] {
   const slots: TimeSlot[] = [];
   const SLOT_DURATION_MINUTES = 10;
-  const TOTAL_DAYS = 10;
-  const totalSlots = (TOTAL_DAYS * 24 * 60) / SLOT_DURATION_MINUTES; // 1440 slots
+  const TOTAL_DAYS = 1;
+  const totalSlots = (TOTAL_DAYS * 24 * 60) / SLOT_DURATION_MINUTES; // 144 slots
   const initialImpressionsPerSlot = Math.floor(totalImpressions / totalSlots);
   
   for (let i = 0; i < totalSlots; i++) {
