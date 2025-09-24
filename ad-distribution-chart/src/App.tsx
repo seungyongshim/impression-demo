@@ -173,7 +173,7 @@ const App: React.FC = () => {
           <h3>📈 알고리즘 동작 원리</h3>
           <ul>
             <li><strong>초기 분할:</strong> 총 노출량을 10일(1,440개 구간)로 균등 분할</li>
-            <li><strong>실시간 조정:</strong> 각 10분 구간이 완료되면 실제 노출량 기록</li>
+            <li><strong>10분 목표량 준수:</strong> 각 10분 구간에서는 설정된 목표량을 정확히 달성</li>
             <li><strong>잔여량 재분배:</strong> 미완료 구간에 남은 노출량을 다시 균등 분할</li>
             <li><strong>시각화:</strong> 하늘색(계획) vs 초록색(실제) 막대 그래프로 비교</li>
           </ul>
