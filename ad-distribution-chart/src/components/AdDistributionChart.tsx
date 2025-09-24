@@ -33,17 +33,12 @@ const AdDistributionChart: React.FC<AdDistributionChartProps> = ({
   actualData,
   currentTime
 }) => {
-  // 완료된 구간에서는 계획 노출량을 0으로 설정
-  const adjustedPlannedData = plannedData.map((planned, index) => 
-    actualData[index] > 0 ? 0 : planned
-  );
-
   const data = {
     labels,
     datasets: [
       {
-        label: '균등 분할 계획',
-        data: adjustedPlannedData,
+        label: '목표량',
+        data: plannedData,
         backgroundColor: 'rgba(135, 206, 235, 0.4)', // 하늘색 반투명
         borderColor: 'rgba(135, 206, 235, 0.8)',
         borderWidth: 1,
