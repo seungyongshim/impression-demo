@@ -1,0 +1,133 @@
+import { TimeSlot } from '../types/AdDistribution';
+
+/**
+ * 10일을 10분 단위로 나누어 타임슬롯을 생성합니다.
+ */
+export function createTimeSlots(startDate: Date, totalImpressions: number): TimeSlot[] {
+  const slots: TimeSlot[] = [];
+  const SLOT_DURATION_MINUTES = 10;
+  const TOTAL_DAYS = 10;
+  const totalSlots = (TOTAL_DAYS * 24 * 60) / SLOT_DURATION_MINUTES; // 1440 slots
+  const initialImpressionsPerSlot = Math.floor(totalImpressions / totalSlots);
+  
+  for (let i = 0; i < totalSlots; i++) {
+    const slotStartTime = new Date(startDate.getTime() + (i * SLOT_DURATION_MINUTES * 60 * 1000));
+    const slotEndTime = new Date(slotStartTime.getTime() + (SLOT_DURATION_MINUTES * 60 * 1000));
+    
+    slots.push({
+      id: i,
+      startTime: slotStartTime,
+      endTime: slotEndTime,
+      plannedImpressions: initialImpressionsPerSlot,
+      actualImpressions: 0,
+      isCompleted: false
+    });
+  }
+  
+  // 남은 노출량을 첫 번째 슬롯들에 분배
+  const remainingImpressions = totalImpressions - (initialImpressionsPerSlot * totalSlots);
+  for (let i = 0; i < remainingImpressions; i++) {
+    slots[i].plannedImpressions += 1;
+  }
+  
+  return slots;
+}
+
+/**
+ * 특정 시점까지의 실제 노출량을 시뮬레이션합니다.
+ * 실제 노출량은 해당 구간의 계획 노출량을 초과할 수 없습니다.
+ */
+export function simulateActualImpressions(
+  slots: TimeSlot[], 
+  currentTime: Date,
+  variationFactor: number = 0.2
+): TimeSlot[] {
+  return slots.map(slot => {
+    if (currentTime >= slot.endTime && !slot.isCompleted) {
+      // 계획된 노출량 이하에서 변동을 주어 실제 노출량 시뮬레이션
+      const variation = Math.random() * variationFactor; // 0~variationFactor 범위
+      // 실제 노출량은 계획량의 (1-variationFactor) ~ 1.0 범위
+      const actualImpressions = Math.floor(slot.plannedImpressions * (1 - variation));
+      
+      return {
+        ...slot,
+        actualImpressions: Math.max(0, actualImpressions),
+        isCompleted: true
+      };
+    }
+    return slot;
+  });
+}
+
+/**
+ * 완료된 슬롯들의 잔여 노출량을 계산하고 미완료 슬롯들에 재분배합니다.
+ * 실제 노출량과 계획량의 차이(잔여량)를 남은 구간에 균등 재분배합니다.
+ */
+export function redistributeRemainingImpressions(slots: TimeSlot[], totalImpressions: number): TimeSlot[] {
+  const completedSlots = slots.filter(slot => slot.isCompleted);
+  const incompleteSlots = slots.filter(slot => !slot.isCompleted);
+  
+  if (incompleteSlots.length === 0) {
+    return slots;
+  }
+  
+  // 완료된 슬롯들에서 사용된 실제 노출량
+  const actualUsedImpressions = completedSlots.reduce((sum, slot) => sum + slot.actualImpressions, 0);
+  
+  // 전체 남은 노출량 (전체 - 실제 사용량)
+  const remainingImpressions = totalImpressions - actualUsedImpressions;
+  
+  // 남은 노출량을 미완료 슬롯들에 균등 분배
+  const baseImpressionsPerSlot = Math.floor(remainingImpressions / incompleteSlots.length);
+  const extraImpressions = remainingImpressions - (baseImpressionsPerSlot * incompleteSlots.length);
+  
+  let extraIndex = 0;
+  return slots.map(slot => {
+    if (!slot.isCompleted) {
+      const newPlannedImpressions = baseImpressionsPerSlot + (extraIndex < extraImpressions ? 1 : 0);
+      extraIndex++;
+      return {
+        ...slot,
+        plannedImpressions: Math.max(0, newPlannedImpressions) // 음수 방지
+      };
+    }
+    return slot;
+  });
+}
+
+/**
+ * 차트 데이터를 생성합니다.
+ */
+export function generateChartData(slots: TimeSlot[], maxSlots: number = 144): {
+  labels: string[];
+  plannedData: number[];
+  actualData: number[];
+} {
+  // 처음 maxSlots 개만 표시 (24시간 * 6 = 144개 슬롯)
+  const displaySlots = slots.slice(0, maxSlots);
+  
+  const labels = displaySlots.map(slot => {
+    const time = slot.startTime.toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+    const date = slot.startTime.toLocaleDateString('ko-KR', {
+      month: 'short',
+      day: 'numeric'
+    });
+    return `${date} ${time}`;
+  });
+  
+  const plannedData = displaySlots.map(slot => slot.plannedImpressions);
+  const actualData = displaySlots.map(slot => slot.actualImpressions);
+  
+  return { labels, plannedData, actualData };
+}
+
+/**
+ * 시뮬레이션 시간을 생성합니다.
+ */
+export function createSimulationTime(startDate: Date, minutesElapsed: number): Date {
+  return new Date(startDate.getTime() + (minutesElapsed * 60 * 1000));
+}
