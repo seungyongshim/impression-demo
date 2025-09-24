@@ -35,7 +35,7 @@ export function createTimeSlots(startDate: Date, totalImpressions: number): Time
 
 /**
  * 특정 시점까지의 실제 노출량을 시뮬레이션합니다.
- * 실제 노출량은 해당 구간의 계획 노출량을 초과할 수 없습니다.
+ * 새로운 규칙: 10분 목표량을 넘어갈 수 없음 (계획량 이하에서 변동)
  */
 export function simulateActualImpressions(
   slots: TimeSlot[], 
@@ -47,11 +47,12 @@ export function simulateActualImpressions(
       // 계획된 노출량 이하에서 변동을 주어 실제 노출량 시뮬레이션
       const variation = Math.random() * variationFactor; // 0~variationFactor 범위
       // 실제 노출량은 계획량의 (1-variationFactor) ~ 1.0 범위
+      // 중요: 계획량을 절대 넘어갈 수 없음
       const actualImpressions = Math.floor(slot.plannedImpressions * (1 - variation));
       
       return {
         ...slot,
-        actualImpressions: Math.max(0, actualImpressions),
+        actualImpressions: Math.max(0, Math.min(actualImpressions, slot.plannedImpressions)),
         isCompleted: true
       };
     }
