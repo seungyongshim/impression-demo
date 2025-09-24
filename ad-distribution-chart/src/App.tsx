@@ -45,8 +45,8 @@ const App: React.FC = () => {
     setCurrentTime(newCurrentTime);
     setSimulationTime(newSimulationTime);
 
-    // 10일 후 시뮬레이션 종료
-    if (newSimulationTime >= 10 * 24 * 60) {
+    // 1일 후 시뮬레이션 종료
+    if (newSimulationTime >= 1 * 24 * 60) {
       setIsPlaying(false);
     }
   }, [timeSlots, simulationTime, speed, CAMPAIGN_START_DATE]);
@@ -91,7 +91,7 @@ const App: React.FC = () => {
     <div className="App">
       <header className="App-header">
         <h1>📊 광고 균등 분할 알고리즘 시뮬레이션</h1>
-        <p>10일간 10분 단위로 광고 노출량을 균등 분할하고, 실제 노출량에 따라 잔여량을 재분배하는 과정을 시각화합니다.</p>
+        <p>1일간 10분 단위로 광고 노출량을 균등 분할하고, 실제 노출량에 따라 잔여량을 재분배하는 과정을 시각화합니다.</p>
       </header>
 
       <main className="App-main">
@@ -172,7 +172,7 @@ const App: React.FC = () => {
         <div className="description">
           <h3>📈 알고리즘 동작 원리</h3>
           <ul>
-            <li><strong>초기 분할:</strong> 총 노출량을 10일(1,440개 구간)로 균등 분할</li>
+            <li><strong>초기 분할:</strong> 총 노출량을 1일(144개 구간)로 균등 분할</li>
             <li><strong>10분 목표량 제한:</strong> 각 10분 구간에서는 목표량을 초과할 수 없음</li>
             <li><strong>잔여량 재분배:</strong> 미달성 노출량을 남은 구간에 균등 재분배</li>
             <li><strong>시각화:</strong> 하늘색(계획) vs 초록색(실제) 막대 그래프로 비교</li>
