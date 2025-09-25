@@ -18,6 +18,7 @@ export interface ChartData {
   labels: string[];
   plannedData: number[];
   actualData: number[];
+  customerInfluxData: number[];
 }
 
 // Algorithm types

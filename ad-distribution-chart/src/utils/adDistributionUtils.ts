@@ -110,12 +110,41 @@ export function redistributeRemainingImpressions(slots: TimeSlot[], totalImpress
 }
 
 /**
+ * 고객 유입 패턴 데이터를 생성합니다.
+ */
+function generateCustomerInfluxData(slots: TimeSlot[], patternType: string): number[] {
+  const pattern = getPatternByType(patternType);
+  if (!pattern) {
+    // 패턴을 찾을 수 없는 경우 균등 분포 반환
+    return slots.map(() => 1.0);
+  }
+
+  const startDate = slots.length > 0 ? slots[0].startTime : new Date('2025-01-01T00:00:00');
+  const totalSlots = slots.length;
+  
+  // 각 슬롯에 대해 패턴 가중치 계산
+  const multipliers = slots.map((slot, index) => {
+    return pattern.getMultiplier(index, totalSlots, startDate);
+  });
+  
+  // 정규화 및 스케일링 (0~100 범위로, 가장 높은 값을 100으로 설정)
+  const maxMultiplier = Math.max(...multipliers);
+  if (maxMultiplier === 0) return slots.map(() => 0);
+  
+  return multipliers.map(mult => (mult / maxMultiplier) * 100);
+}
+/**
  * 차트 데이터를 생성합니다.
  */
-export function generateChartData(slots: TimeSlot[], maxSlots: number = 144): {
+export function generateChartData(
+  slots: TimeSlot[], 
+  maxSlots: number = 144, 
+  patternType: string = 'uniform'
+): {
   labels: string[];
   plannedData: number[];
   actualData: number[];
+  customerInfluxData: number[];
 } {
   // 처음 maxSlots 개만 표시 (24시간 * 6 = 144개 슬롯)
   const displaySlots = slots.slice(0, maxSlots);
@@ -136,7 +165,10 @@ export function generateChartData(slots: TimeSlot[], maxSlots: number = 144): {
   const plannedData = displaySlots.map(slot => slot.plannedImpressions);
   const actualData = displaySlots.map(slot => slot.actualImpressions);
   
-  return { labels, plannedData, actualData };
+  // 고객 유입 패턴 데이터 생성
+  const customerInfluxData = generateCustomerInfluxData(displaySlots, patternType);
+  
+  return { labels, plannedData, actualData, customerInfluxData };
 }
 
 /**
