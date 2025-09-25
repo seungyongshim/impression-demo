@@ -4,17 +4,21 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
   Legend,
   ChartOptions,
 } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Chart } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
   Legend
@@ -24,6 +28,7 @@ interface AdDistributionChartProps {
   labels: string[];
   plannedData: number[];
   actualData: number[];
+  customerInfluxData: number[];
   currentTime?: string;
 }
 
@@ -31,14 +36,29 @@ const AdDistributionChart: React.FC<AdDistributionChartProps> = ({
   labels,
   plannedData,
   actualData,
+  customerInfluxData,
   currentTime
 }) => {
   const data = {
     labels,
     datasets: [
       {
+        label: '고객 유입',
+        data: customerInfluxData,
+        type: 'line' as const,
+        backgroundColor: 'rgba(239, 68, 68, 0.1)', // 빨간색 반투명
+        borderColor: 'rgba(239, 68, 68, 1)', // 빨간색
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        fill: false,
+        tension: 0.3,
+        order: 0,
+      },
+      {
         label: '목표량',
         data: plannedData,
+        type: 'bar' as const,
         backgroundColor: 'rgba(135, 206, 235, 0.4)', // 하늘색 반투명
         borderColor: 'rgba(135, 206, 235, 0.8)',
         borderWidth: 1,
@@ -47,6 +67,7 @@ const AdDistributionChart: React.FC<AdDistributionChartProps> = ({
       {
         label: '실제 노출량',
         data: actualData,
+        type: 'bar' as const,
         backgroundColor: 'rgba(34, 197, 94, 0.8)', // 초록색
         borderColor: 'rgba(34, 197, 94, 1)',
         borderWidth: 1,
@@ -55,7 +76,7 @@ const AdDistributionChart: React.FC<AdDistributionChartProps> = ({
     ],
   };
 
-  const options: ChartOptions<'bar'> = {
+  const options: ChartOptions<'bar' | 'line'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -139,7 +160,7 @@ const AdDistributionChart: React.FC<AdDistributionChartProps> = ({
 
   return (
     <div style={{ width: '100%', height: '500px' }}>
-      <Bar data={data} options={options} />
+      <Chart type='bar' data={data} options={options} />
     </div>
   );
 };

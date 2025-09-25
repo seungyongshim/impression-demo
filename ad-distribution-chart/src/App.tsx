@@ -76,7 +76,7 @@ const App: React.FC = () => {
   }, [isPlaying, updateSimulation, speed]);
 
   // 차트 데이터 생성
-  const chartData = generateChartData(timeSlots, 144); // 24시간분 표시
+  const chartData = generateChartData(timeSlots, 144, selectedPattern); // 24시간분 표시
 
   // 시뮬레이션 제어 함수들
   const handlePlay = () => setIsPlaying(!isPlaying);
@@ -194,6 +194,7 @@ const App: React.FC = () => {
             labels={chartData.labels}
             plannedData={chartData.plannedData}
             actualData={chartData.actualData}
+            customerInfluxData={chartData.customerInfluxData}
             currentTime={currentTime.toLocaleString('ko-KR')}
           />
         </div>
