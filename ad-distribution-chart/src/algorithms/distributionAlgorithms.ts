@@ -3,6 +3,7 @@ import { DistributionAlgorithm, DistributionPattern } from '../types/AdDistribut
 /**
  * 균등분할 알고리즘
  * 전체 노출량을 모든 시간대에 균등하게 분배
+ * 고객 유입 패턴과 무관하게 목표량을 균등하게 분배
  */
 const equalDistribution: DistributionAlgorithm = {
   name: '균등분할',
@@ -14,15 +15,15 @@ const equalDistribution: DistributionAlgorithm = {
     
     const distribution: number[] = [];
     for (let i = 0; i < totalSlots; i++) {
-      const multiplier = distributionPattern.getMultiplier(i, totalSlots, startDate);
-      let impressions = Math.floor(baseImpressions * multiplier);
+      // 균등분할은 고객 유입 패턴과 무관하게 균등하게 분배
+      let impressions = baseImpressions;
       
       // 남은 노출량을 초반 슬롯에 분배
       if (i < remainder) {
         impressions += 1;
       }
       
-      distribution.push(Math.max(0, impressions));
+      distribution.push(impressions);
     }
     
     return distribution;
