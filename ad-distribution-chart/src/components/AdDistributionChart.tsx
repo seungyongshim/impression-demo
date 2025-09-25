@@ -1,28 +1,6 @@
 import React from 'react';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  ChartOptions,
-} from 'chart.js';
-import { Chart } from 'react-chartjs-2';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend
-);
+import { ChartOptions } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 
 interface AdDistributionChartProps {
   labels: string[];
@@ -43,22 +21,8 @@ const AdDistributionChart: React.FC<AdDistributionChartProps> = ({
     labels,
     datasets: [
       {
-        label: '고객 유입',
-        data: customerInfluxData,
-        type: 'line' as const,
-        backgroundColor: 'rgba(239, 68, 68, 0.1)', // 빨간색 반투명
-        borderColor: 'rgba(239, 68, 68, 1)', // 빨간색
-        borderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 4,
-        fill: false,
-        tension: 0.3,
-        order: 0,
-      },
-      {
         label: '목표량',
         data: plannedData,
-        type: 'bar' as const,
         backgroundColor: 'rgba(135, 206, 235, 0.4)', // 하늘색 반투명
         borderColor: 'rgba(135, 206, 235, 0.8)',
         borderWidth: 1,
@@ -67,16 +31,32 @@ const AdDistributionChart: React.FC<AdDistributionChartProps> = ({
       {
         label: '실제 노출량',
         data: actualData,
-        type: 'bar' as const,
         backgroundColor: 'rgba(34, 197, 94, 0.8)', // 초록색
         borderColor: 'rgba(34, 197, 94, 1)',
         borderWidth: 1,
         order: 1,
       },
+      {
+        label: '고객 유입',
+        data: customerInfluxData,
+        backgroundColor: 'rgba(239, 68, 68, 0.3)', // 빨간색 반투명
+        borderColor: 'rgba(239, 68, 68, 1)',
+        borderWidth: 2,
+        order: 0,
+      },
     ],
   };
 
-  const options: ChartOptions<'bar' | 'line'> = {
+  // Don't render chart if there's no data
+  if (!labels || labels.length === 0 || !plannedData || plannedData.length === 0) {
+    return (
+      <div style={{ width: '100%', height: '500px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: '#666', fontSize: '1.2rem' }}>차트 데이터를 불러오는 중...</p>
+      </div>
+    );
+  }
+
+  const options: ChartOptions<'bar'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -160,7 +140,7 @@ const AdDistributionChart: React.FC<AdDistributionChartProps> = ({
 
   return (
     <div style={{ width: '100%', height: '500px' }}>
-      <Chart type='bar' data={data} options={options} />
+      <Bar data={data} options={options} />
     </div>
   );
 };
