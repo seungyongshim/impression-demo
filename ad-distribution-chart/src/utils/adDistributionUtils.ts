@@ -111,6 +111,7 @@ export function redistributeRemainingImpressions(slots: TimeSlot[], totalImpress
 
 /**
  * 고객 유입 패턴 데이터를 생성합니다.
+ * 실제 노출량의 1.5배 수준으로 스케일링합니다.
  */
 function generateCustomerInfluxData(slots: TimeSlot[], patternType: string): number[] {
   const pattern = getPatternByType(patternType);
@@ -127,11 +128,17 @@ function generateCustomerInfluxData(slots: TimeSlot[], patternType: string): num
     return pattern.getMultiplier(index, totalSlots, startDate);
   });
   
-  // 정규화 및 스케일링 (0~100 범위로, 가장 높은 값을 100으로 설정)
-  const maxMultiplier = Math.max(...multipliers);
-  if (maxMultiplier === 0) return slots.map(() => 0);
+  // 실제 노출량 데이터를 기준으로 고객 유입 스케일링
+  const totalActualImpressions = slots.reduce((sum, slot) => sum + slot.actualImpressions, 0);
+  const totalMultiplier = multipliers.reduce((sum, mult) => sum + mult, 0);
   
-  return multipliers.map(mult => (mult / maxMultiplier) * 100);
+  // 고객 유입 총량을 실제 노출량의 1.5배로 설정
+  const targetCustomerInfluxTotal = totalActualImpressions * 1.5;
+  
+  if (totalMultiplier === 0) return slots.map(() => 0);
+  
+  // 패턴에 따라 고객 유입을 분배
+  return multipliers.map(mult => (mult / totalMultiplier) * targetCustomerInfluxTotal);
 }
 /**
  * 차트 데이터를 생성합니다.
