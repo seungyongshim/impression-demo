@@ -37,6 +37,85 @@
   padding: 0 2rem 2rem;
 }
 
+/* 알고리즘 선택 패널 */
+.algorithm-selector {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  text-align: left;
+}
+
+.algorithm-selector h3 {
+  margin: 0 0 1.5rem 0;
+  color: #1f2937;
+  font-size: 1.4rem;
+  text-align: center;
+}
+
+.selector-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.selector-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.selector-group label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 1rem;
+}
+
+.selector-group select {
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  font-size: 1rem;
+  color: #374151;
+  transition: border-color 0.2s ease;
+}
+
+.selector-group select:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.selector-group select:disabled {
+  background-color: #f9fafb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.descriptions {
+  background: rgba(240, 242, 247, 0.8);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.description-item {
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.description-item:last-child {
+  margin-bottom: 0;
+}
+
+.description-item strong {
+  color: #4f46e5;
+  font-weight: 600;
+}
+
 /* 제어 패널 */
 .control-panel {
   display: flex;
@@ -194,7 +273,7 @@
 .description ul {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 0 0 2rem 0;
 }
 
 .description li {
@@ -233,6 +312,15 @@
   
   .chart-container,
   .description {
+    padding: 1rem;
+  }
+  
+  .selector-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .algorithm-selector {
     padding: 1rem;
   }
 }

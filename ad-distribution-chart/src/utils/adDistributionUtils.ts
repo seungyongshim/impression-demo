@@ -1,15 +1,34 @@
 import { TimeSlot } from '../types/AdDistribution';
+import { getAlgorithmByType } from '../algorithms/distributionAlgorithms';
+import { getPatternByType } from '../algorithms/distributionPatterns';
 
 /**
  * 1일을 10분 단위로 나누어 타임슬롯을 생성합니다.
+ * 이제 알고리즘과 분포 패턴을 사용합니다.
  */
-export function createTimeSlots(startDate: Date, totalImpressions: number): TimeSlot[] {
+export function createTimeSlots(
+  startDate: Date, 
+  totalImpressions: number,
+  algorithmType: string = 'equal',
+  patternType: string = 'uniform'
+): TimeSlot[] {
   const slots: TimeSlot[] = [];
   const SLOT_DURATION_MINUTES = 10;
   const TOTAL_DAYS = 1;
   const totalSlots = (TOTAL_DAYS * 24 * 60) / SLOT_DURATION_MINUTES; // 144 slots
-  const initialImpressionsPerSlot = Math.floor(totalImpressions / totalSlots);
   
+  // 알고리즘과 패턴 가져오기
+  const algorithm = getAlgorithmByType(algorithmType);
+  const pattern = getPatternByType(patternType);
+  
+  if (!algorithm || !pattern) {
+    throw new Error(`알고리즘(${algorithmType}) 또는 패턴(${patternType})을 찾을 수 없습니다.`);
+  }
+  
+  // 알고리즘을 사용하여 노출량 분배
+  const distribution = algorithm.distribute(totalImpressions, totalSlots, startDate, pattern);
+  
+  // 타임슬롯 생성
   for (let i = 0; i < totalSlots; i++) {
     const slotStartTime = new Date(startDate.getTime() + (i * SLOT_DURATION_MINUTES * 60 * 1000));
     const slotEndTime = new Date(slotStartTime.getTime() + (SLOT_DURATION_MINUTES * 60 * 1000));
@@ -18,16 +37,10 @@ export function createTimeSlots(startDate: Date, totalImpressions: number): Time
       id: i,
       startTime: slotStartTime,
       endTime: slotEndTime,
-      plannedImpressions: initialImpressionsPerSlot,
+      plannedImpressions: distribution[i] || 0,
       actualImpressions: 0,
       isCompleted: false
     });
-  }
-  
-  // 남은 노출량을 첫 번째 슬롯들에 분배
-  const remainingImpressions = totalImpressions - (initialImpressionsPerSlot * totalSlots);
-  for (let i = 0; i < remainingImpressions; i++) {
-    slots[i].plannedImpressions += 1;
   }
   
   return slots;

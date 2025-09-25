@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import AdDistributionChart from './components/AdDistributionChart';
+import AlgorithmSelector from './components/AlgorithmSelector';
 import { TimeSlot } from './types/AdDistribution';
 import {
   createTimeSlots,
@@ -16,17 +17,27 @@ const App: React.FC = () => {
   const [simulationTime, setSimulationTime] = useState<number>(0); // minutes elapsed
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [speed, setSpeed] = useState<number>(1); // simulation speed multiplier
+  
+  // 새로운 상태: 알고리즘 및 패턴 선택
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>('equal');
+  const [selectedPattern, setSelectedPattern] = useState<string>('uniform');
 
   // 캠페인 설정
   const TOTAL_IMPRESSIONS = 1000000; // 100만 노출
   const CAMPAIGN_START_DATE = useMemo(() => new Date('2025-01-01T00:00:00'), []);
 
-  // 초기 타임슬롯 생성
-  useEffect(() => {
-    const initialSlots = createTimeSlots(CAMPAIGN_START_DATE, TOTAL_IMPRESSIONS);
+  // 초기 타임슬롯 생성 (알고리즘 및 패턴 적용)
+  const createInitialSlots = useCallback(() => {
+    const initialSlots = createTimeSlots(CAMPAIGN_START_DATE, TOTAL_IMPRESSIONS, selectedAlgorithm, selectedPattern);
     setTimeSlots(initialSlots);
     setCurrentTime(CAMPAIGN_START_DATE);
-  }, [CAMPAIGN_START_DATE]);
+    setSimulationTime(0);
+  }, [CAMPAIGN_START_DATE, selectedAlgorithm, selectedPattern]);
+
+  // 초기 로딩 및 알고리즘/패턴 변경 시 재생성
+  useEffect(() => {
+    createInitialSlots();
+  }, [createInitialSlots]);
 
   // 시뮬레이션 업데이트
   const updateSimulation = useCallback(() => {
@@ -71,14 +82,24 @@ const App: React.FC = () => {
   const handlePlay = () => setIsPlaying(!isPlaying);
   const handleReset = () => {
     setIsPlaying(false);
-    setSimulationTime(0);
-    setCurrentTime(CAMPAIGN_START_DATE);
-    const resetSlots = createTimeSlots(CAMPAIGN_START_DATE, TOTAL_IMPRESSIONS);
-    setTimeSlots(resetSlots);
+    createInitialSlots();
   };
 
   const handleSpeedChange = (newSpeed: number) => {
     setSpeed(newSpeed);
+  };
+
+  // 알고리즘 및 패턴 변경 핸들러
+  const handleAlgorithmChange = (algorithmType: string) => {
+    if (!isPlaying) {
+      setSelectedAlgorithm(algorithmType);
+    }
+  };
+
+  const handlePatternChange = (patternType: string) => {
+    if (!isPlaying) {
+      setSelectedPattern(patternType);
+    }
   };
 
   // 통계 계산
@@ -90,11 +111,20 @@ const App: React.FC = () => {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>📊 광고 균등 분할 알고리즘 시뮬레이션</h1>
-        <p>1일간 10분 단위로 광고 노출량을 균등 분할하고, 실제 노출량에 따라 잔여량을 재분배하는 과정을 시각화합니다.</p>
+        <h1>📊 광고 노출 알고리즘 데모</h1>
+        <p>다양한 분배 알고리즘과 고객 유입 패턴을 적용하여 광고 노출량을 시뮬레이션합니다.</p>
       </header>
 
       <main className="App-main">
+        {/* 알고리즘 및 패턴 선택 */}
+        <AlgorithmSelector
+          selectedAlgorithm={selectedAlgorithm}
+          selectedPattern={selectedPattern}
+          onAlgorithmChange={handleAlgorithmChange}
+          onPatternChange={handlePatternChange}
+          disabled={isPlaying}
+        />
+
         {/* 제어 패널 */}
         <div className="control-panel">
           <div className="time-info">
@@ -170,12 +200,21 @@ const App: React.FC = () => {
 
         {/* 설명 */}
         <div className="description">
-          <h3>📈 알고리즘 동작 원리</h3>
+          <h3>📈 다양한 알고리즘 비교</h3>
           <ul>
-            <li><strong>초기 분할:</strong> 총 노출량을 1일(144개 구간)로 균등 분할</li>
-            <li><strong>10분 목표량 제한:</strong> 각 10분 구간에서는 목표량을 초과할 수 없음</li>
-            <li><strong>잔여량 재분배:</strong> 미달성 노출량을 남은 구간에 균등 재분배</li>
-            <li><strong>시각화:</strong> 하늘색(계획) vs 초록색(실제) 막대 그래프로 비교</li>
+            <li><strong>균등분할:</strong> 모든 시간대에 동일한 양으로 분배</li>
+            <li><strong>가중분할:</strong> 고객 유입 패턴에 비례하여 차등 분배</li>
+            <li><strong>피크시간 집중:</strong> 피크 시간대에 노출량을 집중 배치</li>
+            <li><strong>프론트로딩:</strong> 캠페인 초기에 집중하여 빠른 전달</li>
+          </ul>
+          
+          <h3>📊 고객 유입 패턴</h3>
+          <ul>
+            <li><strong>균등 분포:</strong> 하루 종일 동일한 고객 유입</li>
+            <li><strong>피크시간 분포:</strong> 오전(9-11시), 저녁(19-21시) 집중</li>
+            <li><strong>아침 피크:</strong> 오전 시간대(7-12시) 집중</li>
+            <li><strong>저녁 피크:</strong> 저녁 시간대(17-23시) 집중</li>
+            <li><strong>주말 분포:</strong> 10시부터 22시까지 완만한 분포</li>
           </ul>
         </div>
       </main>
